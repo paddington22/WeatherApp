@@ -4,6 +4,7 @@ from django.views.generic import ListView, UpdateView, TemplateView
 from django.views.generic.edit import FormMixin
 from .models import Devices, QueryHistory
 from .forms import DevicesUpdateForm
+from api.models import Statistic
 import requests
 
 # Create your views here.
@@ -87,6 +88,12 @@ class HomepageTemplateView(FormMixin, TemplateView):
             object.last_query = form_info
             object.save()
             QueryHistory.objects.create(device_id=object, query=form_info)
+            if Statistic.objects.filter(city=form_info).exists():
+                entry = Statistic.objects.get(city=form_info)
+                entry.count += 1
+                entry.save()
+            else:
+                Statistic.objects.create(city=form_info, count=1)
         return response
 
 class QueryHistoryTemplateView(TemplateView):
