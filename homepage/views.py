@@ -62,25 +62,31 @@ class HomepageListView(FormMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         device = self.get_queryset(request)
-        context = self.get_context_data(request)
-        response = HttpResponse(render(request, 'homepage.html', context))
 
         if not device.exists():
+            context = self.get_context_data(request)
+            response = HttpResponse(render(request, 'homepage.html', context))
             new_device = Devices.objects.create()
             response.set_cookie("device", str(new_device.id), 100000)
+        else:
+            context = self.get_context_data(request, query=device.last_query)
+            response = HttpResponse(render(request, 'homepage.html', context))
 
         return response
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         if form.is_valid():
-            data = form.cleaned_data.get('last_query')
-        context = self.get_context_data(request, query=data)
+            form_info = form.cleaned_data.get('last_query')
+            context = self.get_context_data(request, query=form_info)
+        else:
+            form_info = ''
+            context = self.get_context_data(request)
         object = Devices.objects.get(pk=request.COOKIES.get('device'))
         response = HttpResponse(render(request, 'homepage.html', context))
 
         if not context.get('error'):
-            object.last_query = data
+            object.last_query = form_info
             object.save()
             QueryHistory.objects.create(device_id=object, query=data)
         return response
