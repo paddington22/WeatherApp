@@ -14,8 +14,8 @@ class HomepageTemplateView(FormMixin, TemplateView):
     form_class = DevicesUpdateForm
 
     def get_info(self, city):
-        return requests.get('http://api.worldweatheronline.com/premium/v1/weather.ashx',
-                     params={'q': city, 'num_of_days': 2, 'format': 'json', 'key': '5e95aec9a8434fe4b82165028241807', 'lang': 'ru'})
+        return requests.get('https://api.worldweatheronline.com/premium/v1/weather.ashx',
+                     params={'q': city, 'num_of_days': 2, 'format': 'json', 'key': '063542f5c28548a680a181420241707', 'lang': 'ru'})
 
     def get_context_data(self, request, query=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -25,7 +25,7 @@ class HomepageTemplateView(FormMixin, TemplateView):
         context['cookie_device']['last_query'] = query
 
         info = self.get_info(query).json()
-
+        print(info)
         if info.get('data').get('error') or info.get('data').get('area'):
             context['error'] = True
         else:
