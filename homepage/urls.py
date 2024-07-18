@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import HomepageListView
-
+from .views import HomepageTemplateView, QueryHistoryTemplateView
 
 urlpatterns = [
-    path("", HomepageListView.as_view(), name='homepage'),
+    path("", HomepageTemplateView.as_view(), name='homepage'),
+    path('history/', QueryHistoryTemplateView.as_view(), name='query-history')
 ]

@@ -7,13 +7,10 @@ from .forms import DevicesUpdateForm
 import requests
 
 # Create your views here.
-class HomepageListView(FormMixin, TemplateView):
+class HomepageTemplateView(FormMixin, TemplateView):
     model = Devices
     template_name = 'homepage.html'
     form_class = DevicesUpdateForm
-
-    def get_queryset(self, request):
-        return Devices.objects.filter(pk=request.COOKIES.get('device'))
 
     def get_info(self, city):
         return requests.get('http://api.worldweatheronline.com/premium/v1/weather.ashx',
@@ -25,9 +22,8 @@ class HomepageListView(FormMixin, TemplateView):
         context['cookie_device'] = {}
         context['cookie_device']['id'] = request.COOKIES.get('device')
         context['cookie_device']['last_query'] = query
-        print(query)
+
         info = self.get_info(query).json()
-        print(info)
 
         if info.get('data').get('error') or info.get('data').get('area'):
             context['error'] = True
@@ -57,21 +53,23 @@ class HomepageListView(FormMixin, TemplateView):
             context['next_condition']['temp'] = next_condition['tempC']
             context['next_condition']['weather'] = next_condition['lang_ru'][0]['value']
             context['next_condition']['image'] = next_condition['weatherIconUrl'][0]['value']
-
         return context
 
     def get(self, request, *args, **kwargs):
-        device = self.get_queryset(request)
+        try:
+            device = Devices.objects.get(pk=request.COOKIES.get('device'))
+        except:
+            device = None
 
-        if not device.exists():
+        if not device:
             context = self.get_context_data(request)
             response = HttpResponse(render(request, 'homepage.html', context))
             new_device = Devices.objects.create()
             response.set_cookie("device", str(new_device.id), 100000)
         else:
+            print(device)
             context = self.get_context_data(request, query=device.last_query)
             response = HttpResponse(render(request, 'homepage.html', context))
-
         return response
 
     def post(self, request, *args, **kwargs):
@@ -88,7 +86,20 @@ class HomepageListView(FormMixin, TemplateView):
         if not context.get('error'):
             object.last_query = form_info
             object.save()
-            QueryHistory.objects.create(device_id=object, query=data)
+            QueryHistory.objects.create(device_id=object, query=form_info)
         return response
 
+class QueryHistoryTemplateView(TemplateView):
+    model = QueryHistory
+    template_name = 'query_history.html'
+
+    def get_context_data(self, request, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object_list'] = QueryHistory.objects.filter(device_id=request.COOKIES.get('device'))[0:10]
+        return context
+
+    def get(self, request):
+        context = self.get_context_data(request)
+        response = HttpResponse(render(request, 'query_history.html', context))
+        return response
 

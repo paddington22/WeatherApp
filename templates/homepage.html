@@ -6,13 +6,12 @@
  margin-top: 50px
  }
 </style>
-
 <div>
 <form method="post">
     {% csrf_token %}
     {{ form.as_table }}
     <input
-        value="search"
+        value="Поиск"
         type="submit"/>
 </form>
 </div>
@@ -30,4 +29,5 @@
     <p><img src="{{ next_condition.image }}"/> {{ next_condition.weather }} </p>
 </div>
 {% endif %}
+<input type="button" value="История запросов" onclick="location.href='{% url "query-history" %}'">
 {% endblock %}
