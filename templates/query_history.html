@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h5>Ваши последние 10 запросов</h5>
+<h5>Ваши последние {{ count }} запросов</h5>
 {% for query in object_list%}
 <p>{{ query.query }}</p>
 {% endfor %}

@@ -2,14 +2,14 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import ListView, UpdateView, TemplateView
 from django.views.generic.edit import FormMixin
-from .models import Devices, QueryHistory
+from .models import Device, QueryHistory
 from .forms import DevicesUpdateForm
 from api.models import Statistic
 import requests
 
 # Create your views here.
 class HomepageTemplateView(FormMixin, TemplateView):
-    model = Devices
+    model = Device
     template_name = 'homepage.html'
     form_class = DevicesUpdateForm
 
@@ -17,15 +17,14 @@ class HomepageTemplateView(FormMixin, TemplateView):
         return requests.get('https://api.worldweatheronline.com/premium/v1/weather.ashx',
                      params={'q': city, 'num_of_days': 2, 'format': 'json', 'key': '063542f5c28548a680a181420241707', 'lang': 'ru'})
 
-    def get_context_data(self, request, query=None, **kwargs):
+    def get_context_data(self, device_id, query=None, **kwargs):
         context = super().get_context_data(**kwargs)
 
         context['cookie_device'] = {}
-        context['cookie_device']['id'] = request.COOKIES.get('device')
+        context['cookie_device']['id'] = device_id
         context['cookie_device']['last_query'] = query
 
         info = self.get_info(query).json()
-        print(info)
         if info.get('data').get('error') or info.get('data').get('area'):
             context['error'] = True
         else:
@@ -57,37 +56,38 @@ class HomepageTemplateView(FormMixin, TemplateView):
         return context
 
     def get(self, request, *args, **kwargs):
+        device_id = request.COOKIES.get('device')
         try:
-            device = Devices.objects.get(pk=request.COOKIES.get('device'))
+            device = Device.objects.get(pk=device_id)
         except:
             device = None
 
         if not device:
             context = self.get_context_data(request)
             response = HttpResponse(render(request, 'homepage.html', context))
-            new_device = Devices.objects.create()
-            response.set_cookie("device", str(new_device.id), 100000)
+            new_device = Device.objects.create()
+            response.set_cookie("device", str(new_device.id), 1000000)
         else:
-            print(device)
-            context = self.get_context_data(request, query=device.last_query)
+            context = self.get_context_data(device_id, query=device.last_query)
             response = HttpResponse(render(request, 'homepage.html', context))
         return response
 
     def post(self, request, *args, **kwargs):
+        device_id = request.COOKIES.get('device')
         form = self.get_form()
         if form.is_valid():
-            form_info = form.cleaned_data.get('last_query')
+            form_info = form.cleaned_data.get('last_query').lower()
             context = self.get_context_data(request, query=form_info)
         else:
             form_info = ''
             context = self.get_context_data(request)
-        object = Devices.objects.get(pk=request.COOKIES.get('device'))
+        device = Device.objects.get(pk=device_id)
         response = HttpResponse(render(request, 'homepage.html', context))
 
         if not context.get('error'):
-            object.last_query = form_info
-            object.save()
-            QueryHistory.objects.create(device_id=object, query=form_info)
+            device.last_query = form_info
+            device.save()
+            QueryHistory.objects.create(device=device, query=form_info)
             if Statistic.objects.filter(city=form_info).exists():
                 entry = Statistic.objects.get(city=form_info)
                 entry.count += 1
@@ -100,13 +100,21 @@ class QueryHistoryTemplateView(TemplateView):
     model = QueryHistory
     template_name = 'query_history.html'
 
-    def get_context_data(self, request, **kwargs):
+    def get_context_data(self, device_id, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['object_list'] = QueryHistory.objects.filter(device_id=request.COOKIES.get('device'))[0:10]
+        items = QueryHistory.objects.filter(device_id=device_id)
+        len_items = len(items)
+        if len_items > 10:
+            context['object_list'] = items[len(items)-10:len(items)-10:-1]
+            context['count'] = 10
+        else:
+            context['object_list'] = items[::-1]
+            context['count'] = len_items
         return context
 
     def get(self, request):
-        context = self.get_context_data(request)
+        device_id = request.COOKIES.get('device')
+        context = self.get_context_data(device_id)
         response = HttpResponse(render(request, 'query_history.html', context))
         return response
 

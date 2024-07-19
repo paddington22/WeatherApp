@@ -1,7 +1,7 @@
 from django import forms
-from .models import Devices
+from .models import Device
 
 class DevicesUpdateForm(forms.ModelForm):
     class Meta:
-        model = Devices
+        model = Device
         fields = ['last_query']
