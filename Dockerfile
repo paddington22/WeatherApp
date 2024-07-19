@@ -8,5 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["bash", "-c"]
-CMD ["./docker-entrypoint.sh"]
+ENTRYPOINT ["sh", "./docker-entrypoint.sh"]

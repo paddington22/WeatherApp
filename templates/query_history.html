@@ -3,6 +3,6 @@
 {% block content %}
 <h5>Ваши последние {{ count }} запросов</h5>
 {% for object in object_list%}
-<p>{{ object.query }} {{ object.datetime }}</p>
+<p>{{ object.query }} {{ object.datetime }} UTC</p>
 {% endfor %}
 {% endblock %}

@@ -7,6 +7,7 @@ from .forms import DevicesUpdateForm
 from api.models import Statistic
 import requests
 
+
 # Create your views here.
 class HomepageTemplateView(FormMixin, TemplateView):
     model = Device
