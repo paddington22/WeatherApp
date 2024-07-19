@@ -105,7 +105,7 @@ class QueryHistoryTemplateView(TemplateView):
         items = QueryHistory.objects.filter(device_id=device_id)
         len_items = len(items)
         if len_items > 10:
-            context['object_list'] = items[len(items)-10:len(items):-1]
+            context['object_list'] = items[len_items-10:len_items][::-1]
             context['count'] = 10
         else:
             context['object_list'] = items[::-1]
