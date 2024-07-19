@@ -3,7 +3,7 @@ from homepage.models import Device, QueryHistory
 from api.models import Statistic
 
 
-class DeviceModelTest(TestCase):
+class DeviceModelTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         Device.objects.create(last_query='Moscow')
@@ -24,7 +24,7 @@ class DeviceModelTest(TestCase):
         self.assertEqual(expected_object_name, str(device))
 
 
-class QueryHistoryModelTest(TestCase):
+class QueryHistoryModelTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         device = Device.objects.create(last_query='Moscow')

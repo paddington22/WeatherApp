@@ -18,14 +18,14 @@
 {% if error %}
 <p>По данному запросу ничего не найдено</p>
 {% else %}
-<h5>Ранее вы искали погоду в городе {{ cookie_device.last_query }}</h5>
+<h5>Ранее вы искали погоду в городе {{ last_query }}</h5>
 <div>
-    <p>В городе {{ cookie_device.last_query }} сейчас {{ current_condition.temp }}°C</p>
+    <p>В городе {{ last_query }} сейчас {{ current_condition.temp }}°C</p>
     <p><img src="{{ current_condition.image }}"/> {{ current_condition.weather }} </p>
 </div>
 <p>Погода на ближайшие 3 часа</p>
 <div>
-    <p>Температура: {{ current_condition.temp }}°C</p>
+    <p>Температура: {{ next_condition.temp }}°C</p>
     <p><img src="{{ next_condition.image }}"/> {{ next_condition.weather }} </p>
 </div>
 {% endif %}

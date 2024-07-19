@@ -2,7 +2,7 @@
 
 {% block content %}
 <h5>Ваши последние {{ count }} запросов</h5>
-{% for query in object_list%}
-<p>{{ query.query }}</p>
+{% for object in object_list%}
+<p>{{ object.query }} {{ object.datetime }}</p>
 {% endfor %}
 {% endblock %}

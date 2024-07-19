@@ -17,12 +17,12 @@ class HomepageTemplateView(FormMixin, TemplateView):
         return requests.get('https://api.worldweatheronline.com/premium/v1/weather.ashx',
                      params={'q': city, 'num_of_days': 2, 'format': 'json', 'key': '063542f5c28548a680a181420241707', 'lang': 'ru'})
 
-    def get_context_data(self, device_id, query=None, **kwargs):
+    def get_context_data(self, query=None, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['cookie_device'] = {}
-        context['cookie_device']['id'] = device_id
-        context['cookie_device']['last_query'] = query
+        if query:
+            query = query.capitalize()
+        context['last_query'] = query
 
         info = self.get_info(query).json()
         if info.get('data').get('error') or info.get('data').get('area'):
@@ -63,12 +63,12 @@ class HomepageTemplateView(FormMixin, TemplateView):
             device = None
 
         if not device:
-            context = self.get_context_data(request)
+            context = self.get_context_data()
             response = HttpResponse(render(request, 'homepage.html', context))
             new_device = Device.objects.create()
             response.set_cookie("device", str(new_device.id), 1000000)
         else:
-            context = self.get_context_data(device_id, query=device.last_query)
+            context = self.get_context_data(query=device.last_query)
             response = HttpResponse(render(request, 'homepage.html', context))
         return response
 
@@ -77,10 +77,10 @@ class HomepageTemplateView(FormMixin, TemplateView):
         form = self.get_form()
         if form.is_valid():
             form_info = form.cleaned_data.get('last_query').lower()
-            context = self.get_context_data(request, query=form_info)
+            context = self.get_context_data(query=form_info)
         else:
             form_info = ''
-            context = self.get_context_data(request)
+            context = self.get_context_data()
         device = Device.objects.get(pk=device_id)
         response = HttpResponse(render(request, 'homepage.html', context))
 

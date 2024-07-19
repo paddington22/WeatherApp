@@ -11,3 +11,4 @@ class Device(models.Model):
 class QueryHistory(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
     query = models.CharField(max_length=100)
+    datetime = models.DateTimeField(auto_now=True)
