@@ -45,6 +45,11 @@ class QueryHistoryModelTestCase(TestCase):
         max_length = query._meta.get_field('query').max_length
         self.assertEqual(max_length, 100)
 
+    def test_datetime_label(self):
+        query = QueryHistory.objects.get(id=1)
+        field_label = query._meta.get_field('datetime').verbose_name
+        self.assertEqual(field_label, 'datetime')
+
 
 class StatisticTestModel(TestCase):
     @classmethod
